@@ -1,0 +1,10 @@
+body {
+    font-family: sans-serif;
+    text-align: center;
+}
+
+canvas {
+    border: 2px solid #000;
+    background: #fff;
+    cursor: crosshair;
+}
