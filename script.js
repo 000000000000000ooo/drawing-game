@@ -1,38 +1,68 @@
-let canvas = document.getElementById
-let ctx = canvas.getContext('2d');
-let drawing = false;
+let gameState = {
+    isPlaying: false,
+    currentRound: 1, 
+    maxRounds: 4,
+    score: 0,
+    timeLeft: 30,
+    timer: null,
+    prompts: ['dog', 'cat', 'bird', 'fish', 'cow', 'pig', 'giraffe'],
+    currentPrompts: [],
+    currentPromptIndex: 0,
+}
 
-canvas.addEventListener('mousedown', () => drawing = true);
-canvas.addEventListener('mouseup', () => drawing = false);
-canvas.addEventListener('mouseleave', () => drawing = false);
-canvas.addEventListener('mousemove', draw);
+const canvas = document.getElementById('drawingCanvas');
+const ctx = canvas.getContext('2d');
+let isDrawing = false;
+let lastX = 0;
+let lastY = 0;
+
+function initCanvas() {
+    ctx.strokeStyle = '#000';
+    ctx.lineJoin = 'round',
+    ctx.lineCap = 'round',
+    ctx.lineWidth = 5;
+}
 
 function draw(e) {
-    if (!drawing) return;
-    ctx.lineWidth = 15;
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = 'black';
-
+    if (!isDrawing || !gameState.isPlaying) return;
     const rect = canvas.getBoundingClientRect();
-    ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+    const currentX = e.clientX - rect.left;
+    const currentY = e.clientY - rect.top;
+
+    ctx.beginPath();
+    ctx.moveTo(lastX, lastY);
+    ctx.lineTo(currentX, currentY);
     ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+
+    lastX = currentX;
+    lastY = currentY;
 }
 
-function clearCanvas() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.beginPath();
-    document.getElementById("result").innerText = "Prediction: ...";
+function stopDrawing() {
+    isDrawing = false;
 }
 
-async function predict() {
-    let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    let = input = tf.browser.fromPixels(imgData).resizeNearestNeighbor([28, 28]).mean(2).expandDims(0).expandDims(-1).toFloat().div(tf.scalar(255));
-    let model = await tf.loadLayersModel('model/model.json');
-    let prediction = model.predict(input);
-    const probs = prediction.dataSync();
-    const predictedIndex = probs.indexOf(Math.max(...probs));
-    document.getElementById("result").innerText = `Prediction: ${predictedIndex}`;
+function getTouchPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+        x: e.touches[0].clientX - rect.left,
+        y: e.touches[0].clientY - rect.top
+    };
+}
+
+function handleTouchStart(e) {
+    if (!gameState.isPlaying) return;
+    isDrawing = true;
+    const pos = getTouchPos(e);
+    lastX = pos.x;
+    lastY = pos.y;
+}
+
+function handleTouchMove(e) {
+    e.preventDefault();
+    if (!isDrawing || !gameState.isPlaying) return;
+    const touch = getTouchPos(e);
+    lastX = touch.x;
+    lastY = touch.y;
 }
 

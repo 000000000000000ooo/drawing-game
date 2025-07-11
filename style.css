@@ -1,10 +1,172 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
-    font-family: sans-serif;
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+.game-container {
+    background: rgba(225, 225, 225, 0,1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    max-width: 600px;
+    width: 90%;
+}
+
+.game-header {
+    margin-bottom: 30px;
+}
+
+.game-title {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+    background: linear-gradient(45deg, #ff6b6b, #feca57);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.prompt-section {
+    margin-bottom: 20px;
+}
+
+.prompt-text {
+    font-size: 1.8em;
+    margin-bottom: 10px;
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.timer {
+    font-size: 1.2em;
+    color: #feca57;
+    font-weight: bold;
+}
+
+.canvas-container {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: inset 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+#drawingCanvas {
+    border: 3px dashed #ddd;
+    border-radius: 10px;
+    cursor: crosshair;
+    transition: border-color 0.3s ease;
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 25px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #667eea, #764ba2);
+    color: white;
+}
+
+.btn-secondary {
+    background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+    color: white;
+}
+
+.btn-success {
+    background: linear-gradient(45deg, #ff6b6b, #20bf6b);
+    color: white;
+}
+
+.btn-success {
+    background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+    color: white;
+}
+
+.btn:hover {
+    transform: translate(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.score {
+    font-size: 1.1em;
+    margin-top: 15px;
+    color: #feca57;
+}
+
+.game-over {
+    display: none;
+    background: rgba(255, 255, 255, 0.95);
+    color: #333;
+    padding: 30px;
+    border-radius: 15px;
+    margin-top: 20px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+.start-screen {
     text-align: center;
 }
 
-canvas {
-    border: 2px solid #000;
-    background: #fff;
-    cursor: crosshair;
+.start-screen h2 {
+    margin-bottom: 20px;
+    font-size: 1.8em;
+}
+
+.start-screen p {
+    margin-bottom: 20px;
+    font-size: 1.8em;
+}
+
+@media (max-width: 600px) {
+    .game-container {
+        padding: 20px;
+    }
+
+    .game-title {
+        font-size: 2em;
+    }
+
+    .prompt-text {
+        font-size: 1.5em;
+    }
+
+    #drawingCanvas {
+        width: 100% !important;
+        height: 250px !important;
+    }
 }
