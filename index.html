@@ -1,13 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Draw Game</title>
     <link rel="stylesheet" href="style.css">
-    <script src="script.js"></script>
 </head>
-
+<body>
 <div class="game-container">
     <div class="game-header"></div>
         <h1 class="game-title">Drawing Game</h1>
@@ -22,7 +20,7 @@
 
 <div id="gameScreen" class="hidden">
     <div class="prompt-section">
-        <div class="prompt-text">Draw: <span id="currentPrompt"></span>house</div>
+        <div class="prompt-text">Draw: <span id="currentPrompt"></span></div>
         <div class="timer">Time: <span id="timeLeft">30</span></div>
     </div>
 
@@ -31,7 +29,7 @@
     </div>
 
     <div class="controls">
-        <button class="btn btn-secondary" onclick()="clearCanvas()">Clear</button>
+        <button class="btn btn-secondary" onclick="clearCanvas()">Clear</button>
         <button class="btn btn-succes" onclick="nextRound()">Done</button>
     </div>
 
@@ -45,4 +43,5 @@
         <button class="btn btn-primary" onclick="restartGame()" style="margin-top: 15px;">Play again</button>
     </div>
 </div>
-</html>
+    <script src="script.js"></script>
+</body>
