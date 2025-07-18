@@ -10,6 +10,11 @@ let gameState = {
     currentPromptIndex: 0,
 }
 
+// AI model variables 
+let classifier;
+let isModelLoaded = false;
+let predictionTimer = null;
+
 const canvas = document.getElementById('drawingCanvas');
 const ctx = canvas.getContext('2d');
 let isDrawing = false;
@@ -22,6 +27,61 @@ function initCanvas() {
     ctx.lineCap = 'round';
     ctx.lineWidth = 5;
     clearCanvas();
+}
+
+async function loadModel() {
+    try {
+        classifier = await ml5.imageClassifier('DoodleNet', modelReady)
+    } catch (error) {
+        console.error('error loading AI model', error);
+        document.getElementById('modelStatus').textContent = 'AI not working';
+        document.getElementById('modelStatus').style.color = '#ff6b6b';
+    }
+}
+
+function modelReady() {
+    console.log('AI loaded');
+    isModelLoaded = true;
+    document.getElementById('modelStatus').textContent = 'AI working';
+    document.getElementById('modelStatus').style.color = '#26de81';
+}
+
+function startPredictionLoop() {
+    if (predictionTimer) clearInterval(predictionTimer);
+
+    predictionTimer = setInterval(() => {
+        if (isModelLoaded && gameState.isPlaying) {
+            classifyDrawing();
+        }
+    }, 1000);
+}
+
+function stopPredictionLoop() {
+    if (predictionTimer) clearInterval(predictionTimer)
+}
+
+function classifyDawing() {
+    classifier.classify(canvas, gotResult);
+}
+
+function gotResult(error, results) {
+    if (error) {
+        console.error(error);
+        return;
+    }
+    if (!results || results.length == 0) return;
+
+    const prediction = results[0].label;
+    const confidence = results[0].confidence;
+
+    console.log('Prediction: ${prediction}, Confidence: ${confidence}');
+
+    const currentPrompt = gameState.currentPrompts[gameState.currentPromptIndex];
+
+    if (prediction.toLowerCase() === currentPrompt.toLowerCase() && confidence > 0.5) {
+        clearInterval(gameState.timer);
+        nextRound(true);
+    }
 }
 
 function startDrawing(e) {
@@ -105,6 +165,7 @@ function startGame() {
     document.getElementById('gameOver').classList.add('hidden');
 
     initCanvas();
+    loadModel();
     startRound();
 }
 
@@ -113,6 +174,7 @@ function startRound() {
     clearCanvas();
     updateDisplay();
     startTimer();
+    startPredictionLoop();
 }
 
 function startTimer() {
@@ -145,6 +207,7 @@ function nextRound() {
 
 function endGame() {
     gameState.isPlaying = false;
+    stopPredictionLoop();
     document.getElementById('gameScreen').classList.add('hidden');
     document.getElementById('gameOver').classList.remove('hidden');
     document.getElementById('finalScore').textContent = gameState.score;
