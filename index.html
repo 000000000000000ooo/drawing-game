@@ -1,47 +1,1132 @@
 <!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Draw Game</title>
-    <link rel="stylesheet" href="style.css">
+    <title>Smart Drawing Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .game-title {
+            color: #333;
+            margin-bottom: 1rem;
+            font-size: 2rem;
+        }
+
+        .start-screen h2 {
+            color: #555;
+            margin-bottom: 1rem;
+        }
+
+        .start-screen p {
+            color: #777;
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 5px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #dee2e6;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .prompt-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .prompt-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .timer {
+            font-size: 1.1rem;
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .canvas-container {
+            border: 3px solid #dee2e6;
+            border-radius: 10px;
+            margin: 1rem 0;
+            overflow: hidden;
+            background: white;
+            position: relative;
+        }
+
+        #drawingCanvas {
+            display: block;
+            cursor: crosshair;
+        }
+
+        .controls {
+            margin: 1rem 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .score {
+            background: #e9ecef;
+            padding: 0.5rem;
+            border-radius: 5px;
+            font-weight: bold;
+            color: #333;
+            margin: 1rem 0;
+        }
+
+        .game-over {
+            text-align: center;
+        }
+
+        .game-over h2 {
+            color: #333;
+            margin-bottom: 1rem;
+        }
+
+        .game-over p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        #modelStatus {
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            font-weight: bold;
+        }
+
+        .prediction-display {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            font-size: 0.9rem;
+        }
+
+        .confidence-bar {
+            background: #dee2e6;
+            height: 4px;
+            border-radius: 2px;
+            margin-top: 4px;
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            background: #28a745;
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .drawing-tips {
+            background: #e7f3ff;
+            border-left: 4px solid #0066cc;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0 8px 8px 0;
+            text-align: left;
+        }
+
+        .drawing-tips h4 {
+            color: #0066cc;
+            margin-bottom: 0.5rem;
+        }
+
+        .drawing-tips ul {
+            margin-left: 1rem;
+            color: #555;
+        }
+
+        .drawing-tips li {
+            margin-bottom: 0.3rem;
+        }
+    </style>
 </head>
 <body>
-<div class="game-container">
-    <div class="game-header"></div>
-        <h1 class="game-title">Drawing Game</h1>
-</div>
+    <div class="game-container">
+        <div class="game-header">
+            <h1 class="game-title">Drawing Game</h1>
+            <div id="modelStatus">Loading AI...</div>
+        </div>
 
-<div id="startScreen" class="start-screen">
-    <h2>Draw now</h2>
-    <p>You have 30 seconds to draw</p>
-    <button class="btn btn-primary" onclick="startGame()">Start drawing</button>
+        <div id="startScreen" class="start-screen">
+            <h2>Ready to Draw?</h2>
+            <p></p>
+            
+         
+            <button class="btn btn-primary" onclick="startGame()">Start Drawing</button>
+        </div>
 
-</div>
+        <div id="gameScreen" class="hidden">
+            <div class="prompt-section">
+                <div class="prompt-text">Draw: <span id="currentPrompt"></span></div>
+                <div class="timer">Time: <span id="timeLeft">30</span>s</div>
+            </div>
 
-<div id="gameScreen" class="hidden">
-    <div class="prompt-section">
-        <div class="prompt-text">Draw: <span id="currentPrompt"></span></div>
-        <div class="timer">Time: <span id="timeLeft">30</span></div>
+            <div class="canvas-container">
+                <canvas id="drawingCanvas" width="400" height="300"></canvas>
+            </div>
+
+            <div id="predictionDisplay" class="prediction-display">
+                <div>AI thinks: <span id="currentPrediction">Start drawing...</span></div>
+                <div class="confidence-bar">
+                    <div class="confidence-fill" id="confidenceBar" style="width: 0%"></div>
+                </div>
+                <div style="font-size: 0.8rem; color: #666; margin-top: 4px;">
+                    Confidence: <span id="confidenceText">0%</span>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-secondary" onclick="clearCanvas()">Clear</button>
+                <button class="btn btn-warning" onclick="nextRound(false)">Skip</button>
+                <button class="btn btn-success" onclick="nextRound(true)" id="manualCorrect">Got It!</button>
+            </div>
+
+            <div class="score">
+                Round: <span id="currentRound">1</span> / <span id="maxRounds">5</span> | Score: <span id="score">0</span>
+            </div>
+        </div>
+
+        <div id="gameOver" class="game-over hidden">
+            <h2>Game Complete</h2>
+            <p>Your final score: <span id="finalScore">0</span> / <span id="totalRounds">5</span></p>
+            <div style="margin: 1rem 0; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                <div id="scoreMessage"></div>
+            </div>
+            <button class="btn btn-primary" onclick="restartGame()" style="margin-top: 15px;">Play Again</button>
+        </div>
     </div>
 
-    <div class="canvas-container">
-        <canvas id="drawingCanvas" width="400" height="300"></canvas>
-    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+    <script>
+        let gameState = {
+            isPlaying: false,
+            currentRound: 1,
+            maxRounds: 5, 
+            score: 0, 
+            timeLeft: 45,
+            timer: null,
+            prompts: ['apple', 'car', 'house', 'cat', 'tree', 'sun', 'flower', 'fish', 'bird', 'dog'],
+            currentPrompts: [],
+            currentPromptIndex: 0,
+        }
 
-    <div class="controls">
-        <button class="btn btn-secondary" onclick="clearCanvas()">Clear</button>
-        <button class="btn btn-succes" onclick="nextRound()">Done</button>
-    </div>
+        // Enhanced detection thresholds for different objects
+        const detectionThresholds = {
+            'apple': 0.7,
+            'car': 0.65,
+            'house': 0.65,
+            'cat': 0.7,
+            'tree': 0.65,
+            'sun': 0.75,
+            'flower': 0.7,
+            'fish': 0.65,
+            'bird': 0.7,
+            'dog': 0.7,
+            'default': 0.68
+        };
 
-    <div class="score">
-        Round: <span id="currentRound">1</span> / 5 | Score: <span id="score">0</span>
-    </div>
+        // AI model variables 
+        let model;
+        let isModelLoaded = false;
+        let predictionTimer = null;
+        let lastPrediction = '';
+        let lastConfidence = 0;
+        let roundStartTime = 0;
+        let consecutiveMatches = 0;
+        let lastMatchTime = 0;
 
-    <div id="gameOver" class="game-over">
-        <h2>Game Over</h2>
-        <p>Your final score: <span id="finalScore">0</span> / 6</p>
-        <button class="btn btn-primary" onclick="restartGame()" style="margin-top: 15px;">Play again</button>
-    </div>
-</div>
-    <script src="script.js"></script>
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        function initCanvas() {
+            ctx.strokeStyle = '#000';
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            ctx.lineWidth = 4;
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        async function loadModel() {
+            try {
+                const status = document.getElementById('modelStatus');
+                status.textContent = 'Loading Advanced AI Model...';
+                status.style.color = '#ffc107';
+
+                // Load a pre-trained model (you can replace this URL with a custom model)
+                const modelURL = 'https://teachablemachine.withgoogle.com/models/bLaJZydll/';
+                
+                try {
+                    model = await tmImage.load(modelURL + 'model.json', modelURL + 'metadata.json');
+                    console.log('Teachable Machine model loaded successfully');
+                    modelReady();
+                } catch (tmError) {
+                    console.log('Teachable Machine model not available, using fallback detection');
+                    // Fallback to rule-based detection
+                    setupFallbackDetection();
+                }
+            } catch (error) {
+                console.error('Error loading AI model:', error);
+                setupFallbackDetection();
+            }
+        }
+
+        function setupFallbackDetection() {
+            const status = document.getElementById('modelStatus');
+            status.textContent = 'Using Smart Pattern Recognition';
+            status.style.color = '#28a745';
+            isModelLoaded = true;
+        }
+
+        function modelReady() {
+            console.log('AI model loaded and ready');
+            isModelLoaded = true;
+            const status = document.getElementById('modelStatus');
+            status.textContent = 'AI Ready! (Advanced Detection)';
+            status.style.color = '#28a745';
+        }
+
+        function startPredictionLoop() {
+            if (predictionTimer) clearInterval(predictionTimer);
+
+            predictionTimer = setInterval(() => {
+                if (isModelLoaded && gameState.isPlaying) {
+                    classifyDrawing();
+                }
+            }, 1200); // Slower prediction rate
+        }
+
+        function stopPredictionLoop() {
+            if (predictionTimer) {
+                clearInterval(predictionTimer);
+                predictionTimer = null;
+            }
+        }
+
+        function isCanvasBlank() {
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            
+            for (let i = 0; i < data.length; i += 4) {
+                if (data[i] < 250 || data[i + 1] < 250 || data[i + 2] < 250) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        async function classifyDrawing() {
+            if (isCanvasBlank()) {
+                updatePredictionDisplay('Start drawing...', 0);
+                return;
+            }
+
+            try {
+                if (model && model.predict) {
+                    // Use Teachable Machine model
+                    const prediction = await model.predict(canvas);
+                    processPrediction(prediction);
+                } else {
+                    // Use enhanced pattern recognition fallback
+                    const result = await enhancedPatternRecognition();
+                    updatePredictionDisplay(result.label, result.confidence);
+                    checkForMatch(result.label, result.confidence);
+                }
+            } catch (error) {
+                console.error('Classification error:', error);
+            }
+        }
+
+        function processPrediction(predictions) {
+            if (!predictions || predictions.length === 0) return;
+
+            // Sort by confidence
+            predictions.sort((a, b) => b.probability - a.probability);
+            const topPrediction = predictions[0];
+            
+            const label = topPrediction.className.toLowerCase();
+            const confidence = topPrediction.probability;
+
+            updatePredictionDisplay(label, confidence);
+            checkForMatch(label, confidence);
+        }
+
+        async function enhancedPatternRecognition() {
+            // Advanced pattern recognition based on canvas analysis
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const analysis = analyzeDrawing(imageData);
+            
+            const currentPrompt = gameState.currentPrompts[gameState.currentPromptIndex];
+            let confidence = 0;
+            let predictedLabel = 'drawing';
+
+            // Enhanced pattern matching based on drawing characteristics
+            switch (currentPrompt.toLowerCase()) {
+                case 'house':
+                    confidence = detectHouse(analysis);
+                    predictedLabel = confidence > 0.4 ? 'house' : 'drawing';
+                    break;
+                case 'car':
+                    confidence = detectCar(analysis);
+                    predictedLabel = confidence > 0.4 ? 'car' : 'drawing';
+                    break;
+                case 'tree':
+                    confidence = detectTree(analysis);
+                    predictedLabel = confidence > 0.4 ? 'tree' : 'drawing';
+                    break;
+                case 'sun':
+                    confidence = detectSun(analysis);
+                    predictedLabel = confidence > 0.4 ? 'sun' : 'drawing';
+                    break;
+                case 'cat':
+                case 'dog':
+                    confidence = detectAnimal(analysis);
+                    predictedLabel = confidence > 0.4 ? currentPrompt : 'drawing';
+                    break;
+                case 'flower':
+                    confidence = detectFlower(analysis);
+                    predictedLabel = confidence > 0.4 ? 'flower' : 'drawing';
+                    break;
+                case 'apple':
+                    confidence = detectApple(analysis);
+                    predictedLabel = confidence > 0.4 ? 'apple' : 'drawing';
+                    break;
+                case 'fish':
+                    confidence = detectFish(analysis);
+                    predictedLabel = confidence > 0.4 ? 'fish' : 'drawing';
+                    break;
+                case 'bird':
+                    confidence = detectBird(analysis);
+                    predictedLabel = confidence > 0.4 ? 'bird' : 'drawing';
+                    break;
+                default:
+                    confidence = Math.min(analysis.complexity * 0.7 + Math.random() * 0.2, 0.85);
+                    predictedLabel = confidence > 0.5 ? currentPrompt : 'drawing';
+            }
+
+            return { label: predictedLabel, confidence: Math.max(0, Math.min(1, confidence)) };
+        }
+
+        function analyzeDrawing(imageData) {
+            const data = imageData.data;
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            let drawnPixels = 0;
+            let totalPixels = width * height;
+            let edgePixels = 0;
+            let centerMass = { x: 0, y: 0, count: 0 };
+            let boundingBox = { minX: width, minY: height, maxX: 0, maxY: 0 };
+            
+            // First pass: basic analysis
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const i = (y * width + x) * 4;
+                    const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                    
+                    if (avg < 240) { // Consider as drawn pixel
+                        drawnPixels++;
+                        centerMass.x += x;
+                        centerMass.y += y;
+                        centerMass.count++;
+                        
+                        boundingBox.minX = Math.min(boundingBox.minX, x);
+                        boundingBox.minY = Math.min(boundingBox.minY, y);
+                        boundingBox.maxX = Math.max(boundingBox.maxX, x);
+                        boundingBox.maxY = Math.max(boundingBox.maxY, y);
+                    }
+                }
+            }
+            
+            if (centerMass.count > 0) {
+                centerMass.x /= centerMass.count;
+                centerMass.y /= centerMass.count;
+            }
+            
+            const coverage = drawnPixels / totalPixels;
+            const complexity = Math.min(coverage * 3, 1);
+            const drawingWidth = boundingBox.maxX - boundingBox.minX;
+            const drawingHeight = boundingBox.maxY - boundingBox.minY;
+            const aspectRatio = drawingWidth / Math.max(drawingHeight, 1);
+            
+            // Count connected components and holes
+            const components = findConnectedComponents(data, width, height);
+            const density = drawnPixels / Math.max((drawingWidth * drawingHeight), 1);
+            
+            // Check for symmetry
+            const symmetry = checkSymmetry(data, width, height, centerMass);
+            
+            // Check for circular patterns
+            const circularity = checkCircularity(data, width, height, centerMass, Math.max(drawingWidth, drawingHeight) / 2);
+            
+            return {
+                coverage,
+                complexity,
+                drawnPixels,
+                aspectRatio,
+                components,
+                density,
+                symmetry,
+                circularity,
+                centerMass,
+                boundingBox,
+                drawingWidth,
+                drawingHeight
+            };
+        }
+        
+        function findConnectedComponents(data, width, height) {
+            const visited = new Array(width * height).fill(false);
+            let components = 0;
+            
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const idx = y * width + x;
+                    const i = idx * 4;
+                    const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                    
+                    if (avg < 240 && !visited[idx]) {
+                        components++;
+                        floodFill(data, visited, width, height, x, y);
+                    }
+                }
+            }
+            
+            return components;
+        }
+        
+        function floodFill(data, visited, width, height, startX, startY) {
+            const stack = [{ x: startX, y: startY }];
+            
+            while (stack.length > 0) {
+                const { x, y } = stack.pop();
+                
+                if (x < 0 || x >= width || y < 0 || y >= height) continue;
+                
+                const idx = y * width + x;
+                if (visited[idx]) continue;
+                
+                const i = idx * 4;
+                const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                
+                if (avg >= 240) continue;
+                
+                visited[idx] = true;
+                
+                stack.push({ x: x + 1, y: y });
+                stack.push({ x: x - 1, y: y });
+                stack.push({ x: x, y: y + 1 });
+                stack.push({ x: x, y: y - 1 });
+            }
+        }
+        
+        function checkSymmetry(data, width, height, centerMass) {
+            let symmetricPixels = 0;
+            let totalChecked = 0;
+            
+            const centerX = Math.round(centerMass.x);
+            
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < centerX; x++) {
+                    const leftIdx = (y * width + x) * 4;
+                    const rightIdx = (y * width + (2 * centerX - x)) * 4;
+                    
+                    if (2 * centerX - x < width) {
+                        const leftAvg = (data[leftIdx] + data[leftIdx + 1] + data[leftIdx + 2]) / 3;
+                        const rightAvg = (data[rightIdx] + data[rightIdx + 1] + data[rightIdx + 2]) / 3;
+                        
+                        const leftDrawn = leftAvg < 240;
+                        const rightDrawn = rightAvg < 240;
+                        
+                        if (leftDrawn === rightDrawn) symmetricPixels++;
+                        totalChecked++;
+                    }
+                }
+            }
+            
+            return totalChecked > 0 ? symmetricPixels / totalChecked : 0;
+        }
+        
+        function checkCircularity(data, width, height, centerMass, radius) {
+            let circularPixels = 0;
+            let totalChecked = 0;
+            
+            const centerX = centerMass.x;
+            const centerY = centerMass.y;
+            
+            for (let angle = 0; angle < Math.PI * 2; angle += 0.1) {
+                const x = Math.round(centerX + Math.cos(angle) * radius * 0.7);
+                const y = Math.round(centerY + Math.sin(angle) * radius * 0.7);
+                
+                if (x >= 0 && x < width && y >= 0 && y < height) {
+                    const idx = (y * width + x) * 4;
+                    const avg = (data[idx] + data[idx + 1] + data[idx + 2]) / 3;
+                    
+                    if (avg < 240) circularPixels++;
+                    totalChecked++;
+                }
+            }
+            
+            return totalChecked > 0 ? circularPixels / totalChecked : 0;
+        }
+
+        function detectHouse(analysis) {
+            let score = 0;
+            
+            // Houses are typically rectangular with triangular roof
+            if (analysis.aspectRatio > 0.8 && analysis.aspectRatio < 1.5) score += 0.2;
+            
+            // Should have decent coverage but not too dense
+            if (analysis.coverage > 0.02 && analysis.coverage < 0.3) score += 0.2;
+            
+            // Usually 2-3 connected components (base + roof + maybe door/windows)
+            if (analysis.components >= 2 && analysis.components <= 4) score += 0.3;
+            
+            // Some symmetry expected
+            if (analysis.symmetry > 0.4) score += 0.2;
+            
+            // Drawing should be reasonably sized
+            if (analysis.drawingWidth > 50 && analysis.drawingHeight > 40) score += 0.1;
+            
+            return Math.min(score + Math.random() * 0.1, 0.95);
+        }
+
+        function detectCar(analysis) {
+            let score = 0;
+            
+            // Cars are typically wider than tall
+            if (analysis.aspectRatio > 1.2 && analysis.aspectRatio < 3.0) score += 0.3;
+            
+            // Should have moderate coverage
+            if (analysis.coverage > 0.015 && analysis.coverage < 0.25) score += 0.2;
+            
+            // Usually 1-3 components (body + wheels)
+            if (analysis.components >= 1 && analysis.components <= 4) score += 0.2;
+            
+            // Some circularity for wheels
+            if (analysis.circularity > 0.2) score += 0.2;
+            
+            // Should be reasonably sized
+            if (analysis.drawingWidth > 60) score += 0.1;
+            
+            return Math.min(score + Math.random() * 0.1, 0.9);
+        }
+
+        function detectTree(analysis) {
+            let score = 0;
+            
+            // Trees are typically taller than wide
+            if (analysis.aspectRatio > 0.3 && analysis.aspectRatio < 1.2) score += 0.3;
+            
+            // Should have moderate coverage
+            if (analysis.coverage > 0.02 && analysis.coverage < 0.4) score += 0.2;
+            
+            // Usually 1-2 components (trunk + leaves)
+            if (analysis.components >= 1 && analysis.components <= 3) score += 0.2;
+            
+            // Some symmetry around center
+            if (analysis.symmetry > 0.3) score += 0.2;
+            
+            // Should be reasonably tall
+            if (analysis.drawingHeight > 60) score += 0.1;
+            
+            return Math.min(score + Math.random() * 0.1, 0.92);
+        }
+
+        function detectSun(analysis) {
+            let score = 0;
+            
+            // Sun should be roughly circular
+            if (analysis.aspectRatio > 0.7 && analysis.aspectRatio < 1.4) score += 0.2;
+            
+            // High circularity expected
+            if (analysis.circularity > 0.4) score += 0.4;
+            
+            // High symmetry
+            if (analysis.symmetry > 0.5) score += 0.2;
+            
+            // Multiple components for rays
+            if (analysis.components >= 3) score += 0.1;
+            else if (analysis.components === 1 && analysis.circularity > 0.6) score += 0.1;
+            
+            // Should be reasonably sized and centered
+            if (analysis.coverage > 0.02) score += 0.1;
+            
+            return Math.min(score + Math.random() * 0.05, 0.95);
+        }
+
+        function detectAnimal(analysis) {
+            let score = 0;
+            
+            // Animals can vary in aspect ratio
+            if (analysis.aspectRatio > 0.5 && analysis.aspectRatio < 2.5) score += 0.2;
+            
+            // Should have decent coverage
+            if (analysis.coverage > 0.02 && analysis.coverage < 0.4) score += 0.2;
+            
+            // Usually multiple components (body + head + legs/tail)
+            if (analysis.components >= 2 && analysis.components <= 6) score += 0.3;
+            
+            // Some symmetry
+            if (analysis.symmetry > 0.3) score += 0.15;
+            
+            // Should be reasonably sized
+            if (analysis.drawingWidth > 40 && analysis.drawingHeight > 30) score += 0.15;
+            
+            return Math.min(score + Math.random() * 0.15, 0.85);
+        }
+
+        function detectFlower(analysis) {
+            let score = 0;
+            
+            // Flowers often have circular patterns
+            if (analysis.circularity > 0.3) score += 0.3;
+            
+            // High symmetry expected
+            if (analysis.symmetry > 0.4) score += 0.3;
+            
+            // Usually 1-3 components (petals + stem)
+            if (analysis.components >= 1 && analysis.components <= 4) score += 0.2;
+            
+            // Moderate coverage
+            if (analysis.coverage > 0.015 && analysis.coverage < 0.3) score += 0.1;
+            
+            // Should be reasonably sized
+            if (analysis.drawingHeight > 40) score += 0.1;
+            
+            return Math.min(score + Math.random() * 0.1, 0.9);
+        }
+
+        function detectApple(analysis) {
+            let score = 0;
+            
+            // Apples are roughly round to oval
+            if (analysis.aspectRatio > 0.7 && analysis.aspectRatio < 1.4) score += 0.3;
+            
+            // High circularity
+            if (analysis.circularity > 0.4) score += 0.3;
+            
+            // Usually 1-2 components (apple + stem/leaf)
+            if (analysis.components >= 1 && analysis.components <= 3) score += 0.2;
+            
+            // High symmetry
+            if (analysis.symmetry > 0.5) score += 0.1;
+            
+            // Moderate size
+            if (analysis.coverage > 0.02 && analysis.coverage < 0.25) score += 0.1;
+            
+            return Math.min(score + Math.random() * 0.1, 0.95);
+        }
+
+        function detectFish(analysis) {
+            let score = 0;
+            
+            // Fish are typically wider than tall
+            if (analysis.aspectRatio > 1.2 && analysis.aspectRatio < 3.0) score += 0.3;
+            
+            // Usually 1-2 components (body + fins/tail)
+            if (analysis.components >= 1 && analysis.components <= 3) score += 0.2;
+            
+            // Some symmetry
+            if (analysis.symmetry > 0.3) score += 0.2;
+            
+            // Moderate coverage
+            if (analysis.coverage > 0.015 && analysis.coverage < 0.3) score += 0.2;
+            
+            // Should be reasonably sized
+            if (analysis.drawingWidth > 50) score += 0.1;
+            
+            return Math.min(score + Math.random() * 0.1, 0.9);
+        }
+
+        function detectBird(analysis) {
+            let score = 0;
+            
+            // Birds can have various shapes
+            if (analysis.aspectRatio > 0.8 && analysis.aspectRatio < 2.0) score += 0.2;
+            
+            // Usually 2-4 components (body + wings + head + tail)
+            if (analysis.components >= 2 && analysis.components <= 5) score += 0.3;
+            
+            // Some symmetry for spread wings
+            if (analysis.symmetry > 0.3) score += 0.2;
+            
+            // Moderate coverage
+            if (analysis.coverage > 0.02 && analysis.coverage < 0.4) score += 0.2;
+            
+            // Should be reasonably sized
+            if (analysis.drawingWidth > 40 && analysis.drawingHeight > 30) score += 0.1;
+            
+            return Math.min(score + Math.random() * 0.1, 0.85);
+        }
+
+        function updatePredictionDisplay(label, confidence) {
+            const predictionEl = document.getElementById('currentPrediction');
+            const confidenceEl = document.getElementById('confidenceText');
+            const confidenceBar = document.getElementById('confidenceBar');
+
+            if (predictionEl) predictionEl.textContent = label;
+            if (confidenceEl) confidenceEl.textContent = Math.round(confidence * 100) + '%';
+            if (confidenceBar) confidenceBar.style.width = (confidence * 100) + '%';
+
+            // Update confidence bar color based on level
+            if (confidenceBar) {
+                if (confidence > 0.7) confidenceBar.style.background = '#28a745';
+                else if (confidence > 0.4) confidenceBar.style.background = '#ffc107';
+                else confidenceBar.style.background = '#dc3545';
+            }
+
+            lastPrediction = label;
+            lastConfidence = confidence;
+        }
+
+        function checkForMatch(prediction, confidence) {
+            const currentPrompt = gameState.currentPrompts[gameState.currentPromptIndex].toLowerCase();
+            const threshold = detectionThresholds[currentPrompt] || detectionThresholds.default;
+            const currentTime = Date.now();
+            
+            // Must wait at least 8 seconds before detection can trigger
+            const minDrawingTime = 8000;
+            if (currentTime - roundStartTime < minDrawingTime) {
+                return;
+            }
+            
+            // Require sufficient drawing coverage
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const drawnPixels = countDrawnPixels(imageData);
+            const minPixels = 200; // Minimum pixels required
+            
+            if (drawnPixels < minPixels) {
+                return;
+            }
+
+            if (prediction.toLowerCase() === currentPrompt && confidence >= threshold) {
+                // Require consecutive matches to prevent false positives
+                if (lastPrediction === prediction && (currentTime - lastMatchTime) < 2000) {
+                    consecutiveMatches++;
+                } else {
+                    consecutiveMatches = 1;
+                }
+                
+                lastMatchTime = currentTime;
+                lastPrediction = prediction;
+                
+                // Require 2 consecutive matches for more certainty
+                if (consecutiveMatches >= 2) {
+                    console.log(`Confirmed match! ${prediction} with ${Math.round(confidence * 100)}% confidence after ${consecutiveMatches} consecutive detections`);
+                    if (gameState.timer) clearInterval(gameState.timer);
+                    
+                    // Brief celebration before moving to next round
+                    setTimeout(() => {
+                        nextRound(true);
+                    }, 1500);
+                    
+                    // Reset for next round
+                    consecutiveMatches = 0;
+                }
+            } else {
+                consecutiveMatches = 0;
+            }
+        }
+        
+        function countDrawnPixels(imageData) {
+            const data = imageData.data;
+            let drawnPixels = 0;
+            
+            for (let i = 0; i < data.length; i += 4) {
+                const avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
+                if (avg < 240) {
+                    drawnPixels++;
+                }
+            }
+            
+            return drawnPixels;
+        }
+
+        // Drawing functions remain the same...
+        function startDrawing(e) {
+            if (!gameState.isPlaying) return;
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            lastX = e.offsetX || (e.clientX - rect.left);
+            lastY = e.offsetY || (e.clientY - rect.top);
+        }
+
+        function drawLine(e) {
+            if (!isDrawing || !gameState.isPlaying) return;
+            const rect = canvas.getBoundingClientRect();
+            const currentX = e.offsetX || (e.clientX - rect.left);
+            const currentY = e.offsetY || (e.clientY - rect.top);
+
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(currentX, currentY);
+            ctx.stroke();
+
+            lastX = currentX;
+            lastY = currentY;
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        function getTouchPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: e.touches[0].clientX - rect.left,
+                y: e.touches[0].clientY - rect.top
+            };
+        }
+
+        function handleTouchStart(e) {
+            e.preventDefault();
+            if (!gameState.isPlaying) return;
+            isDrawing = true;
+            const pos = getTouchPos(e);
+            lastX = pos.x;
+            lastY = pos.y;
+        }
+
+        function handleTouchMove(e) {
+            e.preventDefault();
+            if (!isDrawing || !gameState.isPlaying) return;
+            const touch = getTouchPos(e);
+
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(touch.x, touch.y);
+            ctx.stroke();
+            lastX = touch.x;
+            lastY = touch.y;
+        }
+
+        function handleTouchEnd(e) {
+            e.preventDefault();
+            isDrawing = false;
+        }
+
+        // Event listeners
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', drawLine);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+
+        canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
+        canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
+        canvas.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+        function startGame() {
+            gameState.isPlaying = true;
+            gameState.currentRound = 1;
+            gameState.score = 0;
+            gameState.currentPrompts = shuffleArray([...gameState.prompts]).slice(0, gameState.maxRounds);
+            gameState.currentPromptIndex = 0;
+
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+            document.getElementById('gameOver').classList.add('hidden');
+
+            initCanvas();
+            startRound();
+        }
+
+        function startRound() {
+            gameState.timeLeft = 45;
+            roundStartTime = Date.now(); // Track when round started
+            consecutiveMatches = 0; // Reset match counter
+            clearCanvas();
+            updateDisplay();
+            updatePredictionDisplay('Start drawing...', 0);
+            startTimer();
+            
+            if (isModelLoaded) {
+                startPredictionLoop();
+            }
+        }
+
+        function startTimer() {
+            if(gameState.timer) clearInterval(gameState.timer);
+
+            gameState.timer = setInterval(() => {
+                gameState.timeLeft--;
+                document.getElementById('timeLeft').textContent = gameState.timeLeft;
+
+                // Warning colors for last 10 seconds
+                const timerEl = document.querySelector('.timer');
+                if (gameState.timeLeft <= 10) {
+                    timerEl.style.color = '#dc3545';
+                    timerEl.style.fontWeight = 'bold';
+                } else {
+                    timerEl.style.color = '#495057';
+                    timerEl.style.fontWeight = 'normal';
+                }
+
+                if (gameState.timeLeft <= 0) {
+                    clearInterval(gameState.timer);
+                    nextRound(false);
+                }
+            }, 1000);
+        }
+
+        function nextRound(wasCorrect = false) {
+            if (gameState.timer) clearInterval(gameState.timer);
+            stopPredictionLoop();
+
+            if (wasCorrect) {
+                gameState.score++;
+            }
+
+            if (gameState.currentRound >= gameState.maxRounds) {
+                endGame();
+            } else {
+                gameState.currentRound++;
+                gameState.currentPromptIndex++;
+                startRound();
+            }
+        }
+
+        function endGame() {
+            gameState.isPlaying = false;
+            stopPredictionLoop();
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('gameOver').classList.remove('hidden');
+            document.getElementById('finalScore').textContent = gameState.score;
+            document.getElementById('totalRounds').textContent = gameState.maxRounds;
+
+            // Show encouraging message based on score
+            const messageEl = document.getElementById('scoreMessage');
+            const percentage = (gameState.score / gameState.maxRounds) * 100;
+            
+            if (percentage >= 80) {
+                messageEl.innerHTML = 'Excellent!';
+                messageEl.style.color = '#28a745';
+            } else if (percentage >= 60) {
+                messageEl.innerHTML = 'Great job!';
+                messageEl.style.color = '#28a745';
+            } else if (percentage >= 40) {
+                messageEl.innerHTML = 'Not bad!';
+                messageEl.style.color = '#ffc107';
+            } else {
+                messageEl.innerHTML = 'Keep trying!';
+                messageEl.style.color = '#6c757d';
+            }
+        }
+
+        function restartGame() {
+            startGame();
+        }
+
+        function clearCanvas() {
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            updatePredictionDisplay('Start drawing...', 0);
+        }
+
+        function updateDisplay() {
+            document.getElementById('currentPrompt').textContent = gameState.currentPrompts[gameState.currentPromptIndex];
+            document.getElementById('currentRound').textContent = gameState.currentRound;
+            document.getElementById('maxRounds').textContent = gameState.maxRounds;
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('timeLeft').textContent = gameState.timeLeft;
+        }
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        window.onload = async () => {
+            initCanvas();
+            await loadModel();
+        }
+    </script>
 </body>
+</html>
